@@ -8,13 +8,15 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.nbsp.materialfilepicker.FilePickerActivity;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,9 +43,8 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
                 showError();
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSIONS_REQUEST_CODE);
             }
+            ActivityCompat.requestPermissions(this, new String[]{permission}, PERMISSIONS_REQUEST_CODE);
         } else {
             openFilePicker();
         }
@@ -72,9 +73,14 @@ public class MainActivity extends AppCompatActivity {
         new MaterialFilePicker()
                 .withActivity(this)
                 .withRequestCode(FILE_PICKER_REQUEST_CODE)
-                .withHiddenFiles(true)
+                .withHiddenFiles(false)
                 .withTitle("Sample title")
-                .start();
+                .startWithCallback(new MaterialFilePicker.FileCallback() {
+                    @Override
+                    public void onPick(List<String> paths) {
+                        Toast.makeText(MainActivity.this, paths.get(0), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override
@@ -82,11 +88,10 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == FILE_PICKER_REQUEST_CODE && resultCode == RESULT_OK) {
-            String path = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+            ArrayList<String> files = (ArrayList<String>) data.getSerializableExtra(FilePickerActivity.RESULT_FILE_PATH);
 
-            if (path != null) {
-                Log.d("Path: ", path);
-                Toast.makeText(this, "Picked file: " + path, Toast.LENGTH_LONG).show();
+            if (files != null) {
+                Toast.makeText(this, "Picked " + files.size()+"file(s): ", Toast.LENGTH_LONG).show();
             }
         }
     }

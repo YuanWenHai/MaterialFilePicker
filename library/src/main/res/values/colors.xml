@@ -3,7 +3,7 @@
     <color name="colorPrimary">?colorPrimary</color>
     <color name="colorPrimaryDark">?colorPrimaryDark</color>
     <color name="colorAccent">?colorAccent</color>
-
+    <color name="colorPrimaryLight">#7986CB</color>
     <color name="empty_directory_hint">#c7c7c7</color>
 
     <color name="compatibility_pressed_color">#1a000000</color>

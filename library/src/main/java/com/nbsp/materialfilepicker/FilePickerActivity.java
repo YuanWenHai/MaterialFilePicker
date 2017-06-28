@@ -1,4 +1,4 @@
-package com.nbsp.materialfilepicker.ui;
+package com.nbsp.materialfilepicker;
 
 import android.app.FragmentManager;
 import android.content.Intent;
@@ -12,9 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.nbsp.materialfilepicker.R;
 import com.nbsp.materialfilepicker.filter.CompositeFilter;
 import com.nbsp.materialfilepicker.filter.PatternFilter;
+import com.nbsp.materialfilepicker.ui.DirectoryFragment;
 import com.nbsp.materialfilepicker.utils.FileUtils;
 
 import java.io.File;
@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -35,6 +36,7 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
     public static final String ARG_FILTER = "arg_filter";
     public static final String ARG_CLOSEABLE = "arg_closeable";
     public static final String ARG_TITLE = "arg_title";
+    public static final String ARG_CALLBACK = "arg_callback";
 
     public static final String STATE_START_PATH = "state_start_path";
     private static final String STATE_CURRENT_PATH = "state_current_path";
@@ -43,6 +45,7 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
     private static final int HANDLE_CLICK_DELAY = 150;
 
     private Toolbar mToolbar;
+
     private String mStartPath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private String mCurrentPath = mStartPath;
     private CharSequence mTitle;
@@ -51,6 +54,8 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
 
     private CompositeFilter mFilter;
 
+    private boolean mCallback;
+    private DirectoryFragment mCurrentFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +104,9 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
         if (getIntent().hasExtra(ARG_TITLE)) {
             mTitle = getIntent().getCharSequenceExtra(ARG_TITLE);
         }
+        if(getIntent().hasExtra(ARG_CALLBACK)){
+            mCallback = getIntent().getBooleanExtra(ARG_CALLBACK,false);
+        }
 
         if (getIntent().hasExtra(ARG_CLOSEABLE)) {
             mCloseable = getIntent().getBooleanExtra(ARG_CLOSEABLE, true);
@@ -139,9 +147,11 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
     }
 
     private void initFragment() {
+        DirectoryFragment fragment = DirectoryFragment.getInstance(
+                mCurrentPath, mFilter);
+        mCurrentFragment = fragment;
         getFragmentManager().beginTransaction()
-                .replace(R.id.container, DirectoryFragment.getInstance(
-                        mCurrentPath, mFilter))
+                .replace(R.id.container, fragment)
                 .addToBackStack(null)
                 .commit();
     }
@@ -174,9 +184,11 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
     }
 
     private void addFragmentToBackStack(String path) {
+        DirectoryFragment fragment = DirectoryFragment.getInstance(
+                path, mFilter);
+        mCurrentFragment = fragment;
         getFragmentManager().beginTransaction()
-                .replace(R.id.container, DirectoryFragment.getInstance(
-                        path, mFilter))
+                .replace(R.id.container,fragment )
                 .addToBackStack(null)
                 .commit();
     }
@@ -200,15 +212,16 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
 
     @Override
     public void onBackPressed() {
-        FragmentManager fm = getFragmentManager();
-
-        if (!mCurrentPath.equals(mStartPath)) {
-            fm.popBackStack();
-            mCurrentPath = FileUtils.cutLastSegmentOfPath(mCurrentPath);
-            updateTitle();
-        } else {
-            setResult(RESULT_CANCELED);
-            finish();
+        if(!mCurrentFragment.onBackPressed()){
+            FragmentManager fm = getFragmentManager();
+            if (!mCurrentPath.equals(mStartPath)) {
+                fm.popBackStack();
+                mCurrentPath = FileUtils.cutLastSegmentOfPath(mCurrentPath);
+                updateTitle();
+            } else {
+                setResult(RESULT_CANCELED);
+                finish();
+            }
         }
     }
 
@@ -229,6 +242,19 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
         }, HANDLE_CLICK_DELAY);
     }
 
+    @Override
+    public void onMultiChoiceFabClicked(List<File> files) {
+        setResultAndFinish(files);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(mCallback){
+            MaterialFilePicker.mCallback = null;
+        }
+    }
+
     private void handleFileClicked(final File clickedFile) {
         if (clickedFile.isDirectory()) {
             mCurrentPath = clickedFile.getPath();
@@ -244,9 +270,31 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
     }
 
     private void setResultAndFinish(String filePath) {
-        Intent data = new Intent();
-        data.putExtra(RESULT_FILE_PATH, filePath);
-        setResult(RESULT_OK, data);
+        ArrayList<String> list = new ArrayList<>();
+        list.add(filePath);
+        if(mCallback){
+            MaterialFilePicker.mCallback.onPick(list);
+            MaterialFilePicker.mCallback = null;
+        }else{
+            Intent data = new Intent();
+            data.putExtra(RESULT_FILE_PATH, list);
+            setResult(RESULT_OK, data);
+        }
+        finish();
+    }
+    private void setResultAndFinish(List<File> files){
+        ArrayList<String> list = new ArrayList<>();
+        for(File file : files){
+            list.add(file.getPath());
+        }
+        if(mCallback){
+            MaterialFilePicker.mCallback.onPick(list);
+            MaterialFilePicker.mCallback = null;
+        }else{
+            Intent data = new Intent();
+            data.putExtra(RESULT_FILE_PATH, list);
+            setResult(RESULT_OK, data);
+        }
         finish();
     }
 }

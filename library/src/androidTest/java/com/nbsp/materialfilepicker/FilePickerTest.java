@@ -3,8 +3,6 @@ package com.nbsp.materialfilepicker;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

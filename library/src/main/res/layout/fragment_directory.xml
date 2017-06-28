@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <com.nbsp.materialfilepicker.widget.EmptyRecyclerView
         android:id="@+id/directory_recycler_view"
@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_gravity="center"
+        android:layout_centerInParent="true"
         >
 
         <ImageView
@@ -39,5 +39,39 @@
             />
 
     </LinearLayout>
+    <RelativeLayout
+        android:id="@+id/directory_multi_choice_widget"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:visibility="gone"
+        tools:visibility="visible">
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/directory_fab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:backgroundTint="@color/colorPrimary"
+            app:rippleColor="@color/colorPrimaryLight"
+            android:elevation="4dp"
+            android:layout_margin="15dp"
+            android:src="@drawable/event_available_white"
+            android:scaleType="center"
+           />
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/directory_selected_count"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/bg_rounded_rectangle"
+            android:elevation="16dp"
+            android:gravity="center"
+            android:text="0"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -4,10 +4,13 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.nbsp.materialfilepicker.R;
 import com.nbsp.materialfilepicker.filter.CompositeFilter;
@@ -15,13 +18,15 @@ import com.nbsp.materialfilepicker.utils.FileUtils;
 import com.nbsp.materialfilepicker.widget.EmptyRecyclerView;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created by Dimorinny on 24.10.15.
  */
 public class DirectoryFragment extends Fragment {
-    interface FileClickListener {
+    public interface FileClickListener {
         void onFileClicked(File clickedFile);
+        void onMultiChoiceFabClicked(List<File> files);
     }
 
     private static final String ARG_FILE_PATH = "arg_file_path";
@@ -29,6 +34,8 @@ public class DirectoryFragment extends Fragment {
 
     private View mEmptyView;
     private String mPath;
+    private TextView mSelectedCount;
+    private View mMultiChoiceWidget;
 
     private CompositeFilter mFilter;
 
@@ -67,6 +74,17 @@ public class DirectoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_directory, container, false);
         mDirectoryRecyclerView = (EmptyRecyclerView) view.findViewById(R.id.directory_recycler_view);
         mEmptyView = view.findViewById(R.id.directory_empty_view);
+        View mFab = (FloatingActionButton) view.findViewById(R.id.directory_fab);
+        mMultiChoiceWidget = view.findViewById(R.id.directory_multi_choice_widget);
+        mSelectedCount = (TextView) view.findViewById(R.id.directory_selected_count);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mFileClickListener != null){
+                    mFileClickListener.onMultiChoiceFabClicked(mDirectoryAdapter.getCheckedFiles());
+                }
+            }
+        });
         return view;
     }
 
@@ -76,6 +94,14 @@ public class DirectoryFragment extends Fragment {
         initArgs();
         initFilesList();
     }
+    public boolean onBackPressed(){
+        if(mDirectoryAdapter.isCheckMode()){
+            mDirectoryAdapter.setCheckMode(false);
+            mMultiChoiceWidget.setVisibility(View.GONE);
+            return true;
+        }
+        return false;
+    }
 
     private void initFilesList() {
         mDirectoryAdapter = new DirectoryAdapter(getActivity(),
@@ -83,10 +109,18 @@ public class DirectoryFragment extends Fragment {
 
         mDirectoryAdapter.setOnItemClickListener(new DirectoryAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, int position) {
-                if (mFileClickListener != null) {
+            public void onItemClick(View view, int position,boolean isCheckMode) {
+                if (mFileClickListener != null && !isCheckMode) {
                     mFileClickListener.onFileClicked(mDirectoryAdapter.getModel(position));
+                }else if(isCheckMode){
+                    mSelectedCount.setText(String.valueOf(mDirectoryAdapter.getCheckedFiles().size()));
                 }
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position,boolean isCheckMode) {
+                mMultiChoiceWidget.setVisibility(isCheckMode ? View.GONE : View.VISIBLE);
+                mDirectoryAdapter.setCheckMode(!isCheckMode);
             }
         });
 

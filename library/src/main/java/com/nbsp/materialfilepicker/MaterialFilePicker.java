@@ -3,14 +3,15 @@ package com.nbsp.materialfilepicker;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 
 import com.nbsp.materialfilepicker.filter.CompositeFilter;
 import com.nbsp.materialfilepicker.filter.HiddenFilter;
 import com.nbsp.materialfilepicker.filter.PatternFilter;
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
@@ -32,6 +33,8 @@ public class MaterialFilePicker {
     private Boolean mShowHidden = false;
     private Boolean mCloseable = true;
     private CharSequence mTitle;
+
+    static FileCallback mCallback;
 
     public MaterialFilePicker() {
     }
@@ -230,5 +233,24 @@ public class MaterialFilePicker {
         } else {
             mSupportFragment.startActivityForResult(intent, mRequestCode);
         }
+    }
+    public void startWithCallback(@NonNull FileCallback callback){
+        if (mActivity == null && mFragment == null && mSupportFragment == null) {
+            throw new RuntimeException("You must pass Activity/Fragment by calling withActivity/withFragment/withSupportFragment method");
+        }
+        mCallback = callback;
+        mRequestCode = 1001;
+        Intent intent = getIntent();
+        intent.putExtra(FilePickerActivity.ARG_CALLBACK,true);
+        if (mActivity != null) {
+            mActivity.startActivity(intent);
+        } else if (mFragment != null) {
+            mFragment.startActivity(intent);
+        } else {
+            mSupportFragment.startActivity(intent);
+        }
+    }
+    public interface FileCallback{
+        void onPick(List<String> paths);
     }
 }

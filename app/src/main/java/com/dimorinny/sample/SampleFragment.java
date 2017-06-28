@@ -1,7 +1,6 @@
 package com.dimorinny.sample;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -9,15 +8,18 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.nbsp.materialfilepicker.FilePickerActivity;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
+
+import java.util.ArrayList;
+
+import static android.app.Activity.RESULT_OK;
 
 public class SampleFragment extends Fragment {
 
@@ -86,7 +88,14 @@ public class SampleFragment extends Fragment {
         new MaterialFilePicker()
                 .withSupportFragment(this)
                 .withRequestCode(FILE_PICKER_REQUEST_CODE)
-                .withHiddenFiles(true)
+                .withHiddenFiles(false)
+                .withTitle("Sample title")
+                /*.startWithCallback(new MaterialFilePicker.FileCallback() {
+                    @Override
+                    public void onPick(List<String> paths) {
+                        Toast.makeText(MainActivity.this, paths.get(0), Toast.LENGTH_SHORT).show();
+                    }
+                });*/
                 .start();
     }
 
@@ -94,12 +103,11 @@ public class SampleFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == FILE_PICKER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            String path = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+        if (requestCode == FILE_PICKER_REQUEST_CODE && resultCode == RESULT_OK) {
+            ArrayList<String> files = (ArrayList<String>) data.getSerializableExtra(FilePickerActivity.RESULT_FILE_PATH);
 
-            if (path != null) {
-                Log.d("Path (fragment): ", path);
-                Toast.makeText(getContext(), "Picked file in fragment: " + path, Toast.LENGTH_LONG).show();
+            if (files != null) {
+                Toast.makeText(getContext(), "Picked " + files.size()+"file(s): ", Toast.LENGTH_LONG).show();
             }
         }
     }

@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -12,6 +13,7 @@ import com.nbsp.materialfilepicker.R;
 import com.nbsp.materialfilepicker.utils.FileTypeUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,27 +22,44 @@ import java.util.List;
 
 public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.DirectoryViewHolder> {
     public interface OnItemClickListener {
-        void onItemClick(View view, int position);
+        void onItemClick(View view, int position,boolean isCheckMode);
+        void onItemLongClick(View view,int position,boolean isCheckMode);
     }
-
+    private boolean isCheckMode;
+    private ArrayList<Boolean> mCheckedMap = new ArrayList<>();
     public class DirectoryViewHolder extends RecyclerView.ViewHolder {
         private ImageView mFileImage;
         private TextView mFileTitle;
         private TextView mFileSubtitle;
-
+        private CheckBox mCheckBox;
         public DirectoryViewHolder(View itemView, final OnItemClickListener clickListener) {
             super(itemView);
-
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    clickListener.onItemClick(v, getAdapterPosition());
+                    if(isCheckMode() && !mFiles.get(getAdapterPosition()).isDirectory()){
+                        mCheckBox.setChecked(!mCheckBox.isChecked());
+                        mCheckedMap.set(getAdapterPosition(),mCheckBox.isChecked());
+                    }
+                    clickListener.onItemClick(v, getAdapterPosition(), isCheckMode());
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    //exclude directory item's click event
+                    if(!mFiles.get(getAdapterPosition()).isDirectory()){
+                        clickListener.onItemLongClick(v,getAdapterPosition(),isCheckMode());
+                        return true;
+                    }
+                    return false;
                 }
             });
 
             mFileImage = (ImageView) itemView.findViewById(R.id.item_file_image);
             mFileTitle = (TextView) itemView.findViewById(R.id.item_file_title);
             mFileSubtitle = (TextView) itemView.findViewById(R.id.item_file_subtitle);
+            mCheckBox = (CheckBox) itemView.findViewById(R.id.item_file_check_box);
         }
     }
 
@@ -51,10 +70,29 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
     public DirectoryAdapter(Context context, List<File> files) {
         mContext = context;
         mFiles = files;
+        for (File file : files){
+            mCheckedMap.add(false);
+        }
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
         mOnItemClickListener = listener;
+    }
+    public void setCheckMode(boolean which){
+        isCheckMode = which;
+        notifyDataSetChanged();
+    }
+    public boolean isCheckMode(){
+        return isCheckMode;
+    }
+    public List<File> getCheckedFiles(){
+        List<File> list = new ArrayList<>();
+        for(int i=0;i<mCheckedMap.size();i++){
+            if(mCheckedMap.get(i)){
+                list.add(mFiles.get(i));
+            }
+        }
+        return list;
     }
 
     @Override
@@ -74,6 +112,16 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
         holder.mFileImage.setImageResource(fileType.getIcon());
         holder.mFileSubtitle.setText(fileType.getDescription());
         holder.mFileTitle.setText(currentFile.getName());
+        if(!currentFile.isDirectory() && isCheckMode){
+            holder.mCheckBox.setVisibility(View.VISIBLE);
+            if(mCheckedMap.get(position)){
+                holder.mCheckBox.setChecked(true);
+            }else{
+                holder.mCheckBox.setChecked(false);
+            }
+        }else{
+            holder.mCheckBox.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
