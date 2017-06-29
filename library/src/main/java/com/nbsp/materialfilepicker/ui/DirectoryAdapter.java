@@ -51,6 +51,9 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
     }
     public void setCheckMode(boolean which){
         isCheckMode = which;
+        if(!which){
+            resetCheckState();
+        }
         notifyDataSetChanged();
     }
     public boolean isCheckMode(){
@@ -60,6 +63,12 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
 
     public void setCountLimitation(int count){
         mCountLimitation = count;
+    }
+    public void resetCheckState(){
+        mCheckedCount = 0;
+        for(int i=0;i<mCheckedMap.size();i++){
+            mCheckedMap.set(i,false);
+        }
     }
 
     @Override
@@ -84,10 +93,12 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
         }else{
             holder.mCheckBox.setVisibility(View.INVISIBLE);
         }
-        if(mCheckedMap.get(position)){
-            holder.mCheckBox.setChecked(true);
-        }else{
-            holder.mCheckBox.setChecked(false);
+        if(isCheckMode){
+            if(mCheckedMap.get(position)){
+                holder.mCheckBox.setChecked(true);
+            }else{
+                holder.mCheckBox.setChecked(false);
+            }
         }
     }
 

@@ -99,6 +99,7 @@ public class DirectoryFragment extends Fragment {
     public boolean onBackPressed(){
         if(mDirectoryAdapter.isCheckMode()){
             mDirectoryAdapter.setCheckMode(false);
+            mSelectedCount.setText("0");
             mMultiChoiceWidget.setVisibility(View.GONE);
             return true;
         }
@@ -124,6 +125,9 @@ public class DirectoryFragment extends Fragment {
             public void onItemLongClick(View view, int position,boolean isCheckMode) {
                 mMultiChoiceWidget.setVisibility(isCheckMode ? View.GONE : View.VISIBLE);
                 mDirectoryAdapter.setCheckMode(!isCheckMode);
+                if(isCheckMode){
+                   mSelectedCount.setText("0");
+                }
             }
         });
 
