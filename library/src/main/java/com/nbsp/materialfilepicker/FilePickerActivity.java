@@ -37,6 +37,7 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
     public static final String ARG_CLOSEABLE = "arg_closeable";
     public static final String ARG_TITLE = "arg_title";
     public static final String ARG_CALLBACK = "arg_callback";
+    public static final String ARG_COUNT_LIMITATION = "arg_count_limitation";
 
     public static final String STATE_START_PATH = "state_start_path";
     private static final String STATE_CURRENT_PATH = "state_current_path";
@@ -49,6 +50,7 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
     private String mStartPath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private String mCurrentPath = mStartPath;
     private CharSequence mTitle;
+    private int mCount;
 
     private Boolean mCloseable;
 
@@ -111,6 +113,9 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
         if (getIntent().hasExtra(ARG_CLOSEABLE)) {
             mCloseable = getIntent().getBooleanExtra(ARG_CLOSEABLE, true);
         }
+        if(getIntent().hasExtra(ARG_COUNT_LIMITATION)){
+            mCount = getIntent().getIntExtra(ARG_COUNT_LIMITATION,0);
+        }
     }
 
     private void initToolbar() {
@@ -148,7 +153,7 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
 
     private void initFragment() {
         DirectoryFragment fragment = DirectoryFragment.getInstance(
-                mCurrentPath, mFilter);
+                mCurrentPath,mCount, mFilter);
         mCurrentFragment = fragment;
         getFragmentManager().beginTransaction()
                 .replace(R.id.container, fragment)
@@ -185,7 +190,7 @@ public class FilePickerActivity extends AppCompatActivity implements DirectoryFr
 
     private void addFragmentToBackStack(String path) {
         DirectoryFragment fragment = DirectoryFragment.getInstance(
-                path, mFilter);
+                path,mCount,mFilter);
         mCurrentFragment = fragment;
         getFragmentManager().beginTransaction()
                 .replace(R.id.container,fragment )

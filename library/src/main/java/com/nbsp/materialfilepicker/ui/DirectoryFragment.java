@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +30,7 @@ public class DirectoryFragment extends Fragment {
 
     private static final String ARG_FILE_PATH = "arg_file_path";
     private static final String ARG_FILTER = "arg_filter";
+    private static final String ARG_COUNT_LIMITATION = "arg_count_limitation";
 
     private View mEmptyView;
     private String mPath;
@@ -38,6 +38,7 @@ public class DirectoryFragment extends Fragment {
     private View mMultiChoiceWidget;
 
     private CompositeFilter mFilter;
+    private int mCount;
 
     private EmptyRecyclerView mDirectoryRecyclerView;
     private DirectoryAdapter mDirectoryAdapter;
@@ -57,12 +58,13 @@ public class DirectoryFragment extends Fragment {
     }
 
     public static DirectoryFragment getInstance(
-            String path, CompositeFilter filter) {
+            String path,int count, CompositeFilter filter) {
         DirectoryFragment instance = new DirectoryFragment();
 
         Bundle args = new Bundle();
         args.putString(ARG_FILE_PATH, path);
         args.putSerializable(ARG_FILTER, filter);
+        args.putInt(ARG_COUNT_LIMITATION,count);
         instance.setArguments(args);
 
         return instance;
@@ -103,17 +105,18 @@ public class DirectoryFragment extends Fragment {
         return false;
     }
 
+
     private void initFilesList() {
         mDirectoryAdapter = new DirectoryAdapter(getActivity(),
                 FileUtils.getFileListByDirPath(mPath, mFilter));
-
+        mDirectoryAdapter.setCountLimitation(mCount);
         mDirectoryAdapter.setOnItemClickListener(new DirectoryAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position,boolean isCheckMode) {
                 if (mFileClickListener != null && !isCheckMode) {
                     mFileClickListener.onFileClicked(mDirectoryAdapter.getModel(position));
                 }else if(isCheckMode){
-                    mSelectedCount.setText(String.valueOf(mDirectoryAdapter.getCheckedFiles().size()));
+                    mSelectedCount.setText(String.valueOf(mDirectoryAdapter.getCheckedCount()));
                 }
             }
 
@@ -134,6 +137,7 @@ public class DirectoryFragment extends Fragment {
         if (getArguments().getString(ARG_FILE_PATH) != null) {
             mPath = getArguments().getString(ARG_FILE_PATH);
         }
+        mCount = getArguments().getInt(ARG_COUNT_LIMITATION,0);
 
         mFilter = (CompositeFilter) getArguments().getSerializable(ARG_FILTER);
     }

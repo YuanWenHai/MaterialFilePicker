@@ -6,8 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nbsp.materialfilepicker.R;
 import com.nbsp.materialfilepicker.utils.FileTypeUtils;
@@ -27,45 +29,14 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
     }
     private boolean isCheckMode;
     private ArrayList<Boolean> mCheckedMap = new ArrayList<>();
-    public class DirectoryViewHolder extends RecyclerView.ViewHolder {
-        private ImageView mFileImage;
-        private TextView mFileTitle;
-        private TextView mFileSubtitle;
-        private CheckBox mCheckBox;
-        public DirectoryViewHolder(View itemView, final OnItemClickListener clickListener) {
-            super(itemView);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(isCheckMode() && !mFiles.get(getAdapterPosition()).isDirectory()){
-                        mCheckBox.setChecked(!mCheckBox.isChecked());
-                        mCheckedMap.set(getAdapterPosition(),mCheckBox.isChecked());
-                    }
-                    clickListener.onItemClick(v, getAdapterPosition(), isCheckMode());
-                }
-            });
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    //exclude directory item's click event
-                    if(!mFiles.get(getAdapterPosition()).isDirectory()){
-                        clickListener.onItemLongClick(v,getAdapterPosition(),isCheckMode());
-                        return true;
-                    }
-                    return false;
-                }
-            });
-
-            mFileImage = (ImageView) itemView.findViewById(R.id.item_file_image);
-            mFileTitle = (TextView) itemView.findViewById(R.id.item_file_title);
-            mFileSubtitle = (TextView) itemView.findViewById(R.id.item_file_subtitle);
-            mCheckBox = (CheckBox) itemView.findViewById(R.id.item_file_check_box);
-        }
-    }
-
+    private int mCountLimitation;
+    private int mCheckedCount;
     private List<File> mFiles;
     private Context mContext;
     private OnItemClickListener mOnItemClickListener;
+
+
+
 
     public DirectoryAdapter(Context context, List<File> files) {
         mContext = context;
@@ -85,14 +56,10 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
     public boolean isCheckMode(){
         return isCheckMode;
     }
-    public List<File> getCheckedFiles(){
-        List<File> list = new ArrayList<>();
-        for(int i=0;i<mCheckedMap.size();i++){
-            if(mCheckedMap.get(i)){
-                list.add(mFiles.get(i));
-            }
-        }
-        return list;
+
+
+    public void setCountLimitation(int count){
+        mCountLimitation = count;
     }
 
     @Override
@@ -114,13 +81,13 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
         holder.mFileTitle.setText(currentFile.getName());
         if(!currentFile.isDirectory() && isCheckMode){
             holder.mCheckBox.setVisibility(View.VISIBLE);
-            if(mCheckedMap.get(position)){
-                holder.mCheckBox.setChecked(true);
-            }else{
-                holder.mCheckBox.setChecked(false);
-            }
         }else{
             holder.mCheckBox.setVisibility(View.INVISIBLE);
+        }
+        if(mCheckedMap.get(position)){
+            holder.mCheckBox.setChecked(true);
+        }else{
+            holder.mCheckBox.setChecked(false);
         }
     }
 
@@ -132,4 +99,67 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
     public File getModel(int index) {
         return mFiles.get(index);
     }
+    public List<File> getCheckedFiles(){
+        List<File> list = new ArrayList<>();
+        for(int i=0;i<mCheckedMap.size();i++){
+            if(mCheckedMap.get(i)){
+                list.add(mFiles.get(i));
+            }
+        }
+        return list;
+    }
+    public int getCheckedCount(){
+        return mCheckedCount;
+    }
+
+    public class DirectoryViewHolder extends RecyclerView.ViewHolder {
+        private ImageView mFileImage;
+        private TextView mFileTitle;
+        private TextView mFileSubtitle;
+        private CheckBox mCheckBox;
+        public DirectoryViewHolder(View itemView, final OnItemClickListener clickListener) {
+            super(itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(isCheckMode() && !mFiles.get(getAdapterPosition()).isDirectory()){
+                        mCheckBox.setChecked(!mCheckBox.isChecked());
+                    }
+                    clickListener.onItemClick(v, getAdapterPosition(), isCheckMode());
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    //exclude directory item's click event
+                    if(!mFiles.get(getAdapterPosition()).isDirectory()){
+                        clickListener.onItemLongClick(v,getAdapterPosition(),isCheckMode());
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            mFileImage = (ImageView) itemView.findViewById(R.id.item_file_image);
+            mFileTitle = (TextView) itemView.findViewById(R.id.item_file_title);
+            mFileSubtitle = (TextView) itemView.findViewById(R.id.item_file_subtitle);
+            mCheckBox = (CheckBox) itemView.findViewById(R.id.item_file_check_box);
+            mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(isChecked && mCountLimitation != 0 && mCheckedCount >= mCountLimitation){
+                        buttonView.setChecked(false);
+                        Toast.makeText(mContext, mContext.getText(R.string.reached_pick_limitation), Toast.LENGTH_SHORT).show();
+                    }else if(isChecked){
+                        mCheckedMap.set(getAdapterPosition(),isChecked);
+                        mCheckedCount++;
+                    }else{
+                        mCheckedMap.set(getAdapterPosition(),isChecked);
+                        mCheckedCount--;
+                    }
+                }
+            });
+        }
+    }
+
 }

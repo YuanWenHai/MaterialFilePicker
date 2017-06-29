@@ -75,10 +75,11 @@ public class MainActivity extends AppCompatActivity {
                 .withRequestCode(FILE_PICKER_REQUEST_CODE)
                 .withHiddenFiles(false)
                 .withTitle("Sample title")
+                .withCountLimitation(3)
                 .startWithCallback(new MaterialFilePicker.FileCallback() {
                     @Override
                     public void onPick(List<String> paths) {
-                        Toast.makeText(MainActivity.this, paths.get(0), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, String.valueOf(paths.size()), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

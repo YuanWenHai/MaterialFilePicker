@@ -32,6 +32,7 @@ public class MaterialFilePicker {
     private String mCurrentPath;
     private Boolean mShowHidden = false;
     private Boolean mCloseable = true;
+    private int mCount;
     private CharSequence mTitle;
 
     static FileCallback mCallback;
@@ -145,6 +146,11 @@ public class MaterialFilePicker {
         return this;
     }
 
+    public MaterialFilePicker withCountLimitation(int count){
+        mCount = count;
+        return this;
+    }
+
     /**
      * Set title of picker
      */
@@ -202,6 +208,9 @@ public class MaterialFilePicker {
 
         if (mTitle != null) {
             intent.putExtra(FilePickerActivity.ARG_TITLE, mTitle);
+        }
+        if(mCount != 0){
+            intent.putExtra(FilePickerActivity.ARG_COUNT_LIMITATION,mCount);
         }
 
         return intent;

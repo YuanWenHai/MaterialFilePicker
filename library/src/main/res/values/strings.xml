@@ -16,4 +16,5 @@
     <string name="type_power_point">Presentation</string>
     <string name="type_word">Document</string>
     <string name="type_apk">APK</string>
+    <string name="reached_pick_limitation">reached item count limitation</string>
 </resources>
