@@ -158,12 +158,14 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
             mCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if(isChecked && mCountLimitation != 0 && mCheckedCount >= mCountLimitation){
-                        buttonView.setChecked(false);
-                        Toast.makeText(mContext, mContext.getText(R.string.reached_pick_limitation), Toast.LENGTH_SHORT).show();
-                    }else if(isChecked){
-                        mCheckedMap.set(getAdapterPosition(),isChecked);
-                        mCheckedCount++;
+                    if(isChecked){
+                        if( mCountLimitation != 0 && mCheckedCount >= mCountLimitation){
+                            buttonView.setChecked(false);
+                            Toast.makeText(mContext, mContext.getText(R.string.reached_pick_limitation), Toast.LENGTH_SHORT).show();
+                        }else{
+                            mCheckedMap.set(getAdapterPosition(),isChecked);
+                            mCheckedCount++;
+                        }
                     }else{
                         mCheckedMap.set(getAdapterPosition(),isChecked);
                         mCheckedCount--;
