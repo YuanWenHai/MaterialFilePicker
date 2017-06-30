@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 .withActivity(this)
                 .withRequestCode(FILE_PICKER_REQUEST_CODE)
                 .withHiddenFiles(false)
+                //.withFilter(Pattern.compile("(?i)^.*?\\.(url)$"))
                 .withTitle("Sample title")
                 .withCountLimitation(3)
                 .startWithCallback(new MaterialFilePicker.FileCallback() {
